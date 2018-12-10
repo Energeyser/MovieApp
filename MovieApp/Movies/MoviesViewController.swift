@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Foundation
 
 class MoviesViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
 
@@ -61,21 +62,32 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
         popularCollectionView.delegate = self
         
         
+        initLayouts()
+       
         
-        let layoutPlaylist = self.playlistCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
-        layoutPlaylist.sectionInset = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5 )
-        layoutPlaylist.minimumInteritemSpacing = 5
-        layoutPlaylist.itemSize = CGSize(width: (self.playlistCollectionView.frame.size.width - 20), height: (self.nowCollectionView.frame.size.height))
         
-        let layoutNow = self.nowCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
-        layoutNow.sectionInset = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5 )
-        layoutNow.minimumInteritemSpacing = 5
-        layoutNow.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 3 ) - 20, height: (self.nowCollectionView.frame.size.height))
+        // API Call
+
         
-        let layoutPopular = self.popularCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
-        layoutPopular.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5 )
-        layoutPopular.minimumInteritemSpacing = 3
-        layoutPopular.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 3 ) - 20, height: (self.nowCollectionView.frame.size.height) - 50)
+        let postData = NSData(data: "{}".data(using: String.Encoding.utf8)!)
+        
+        let request = NSMutableURLRequest(url: NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?page=1&language=en-US&api_key=324976fbd6c97837393e4a3bf3cdd6a0")! as URL,
+                                          cachePolicy: .useProtocolCachePolicy,
+                                          timeoutInterval: 10.0)
+        request.httpMethod = "GET"
+        request.httpBody = postData as Data
+        
+        let session = URLSession.shared
+        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+            if (error != nil) {
+                print(error ?? "Error")
+            } else {
+                let httpResponse = response as? HTTPURLResponse
+                print(httpResponse ?? "Error")
+            }
+        })
+        
+        dataTask.resume()
         
     }
     
@@ -137,4 +149,21 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
                 print(indexPath.item)
             }
         }
+    
+    func initLayouts(){
+        let layoutPlaylist = self.playlistCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
+        layoutPlaylist.sectionInset = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5 )
+        layoutPlaylist.minimumInteritemSpacing = 5
+        layoutPlaylist.itemSize = CGSize(width: (self.playlistCollectionView.frame.size.width - 40), height: (self.nowCollectionView.frame.size.height))
+        
+        let layoutNow = self.nowCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
+        layoutNow.sectionInset = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5 )
+        layoutNow.minimumInteritemSpacing = 5
+        layoutNow.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 3 ) - 20, height: (self.nowCollectionView.frame.size.height))
+        
+        let layoutPopular = self.popularCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
+        layoutPopular.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5 )
+        layoutPopular.minimumInteritemSpacing = 3
+        layoutPopular.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 2 ) - 20, height: (self.nowCollectionView.frame.size.height) - 50)
+    }
 }
