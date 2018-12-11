@@ -9,7 +9,7 @@
 import UIKit
 import Foundation
 
-class MoviesViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+class MoviesViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate  {
 
     
     let playlistImages: [UIImage] = [
@@ -18,28 +18,17 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
         UIImage(named: "other playlist")!,
     ]
     
-    let nowImages: [UIImage] = [
-    UIImage(named: "arrival")!,
-    UIImage(named: "the dark knight")!,
-    UIImage(named: "a ghost story")!,
-    UIImage(named: "wonder woman")!,
-    ]
+    var nowImages: [UIImage] = []
     
-    let nowLabels = ["Arrival","The Dark Knight","A Ghost Story", "Wonder Woman"]
+    let nowLabels = ["null","null","null", "null"]
     
-    let popularImages: [UIImage] = [
-        UIImage(named: "arrival")!,
-        UIImage(named: "the dark knight")!,
-        UIImage(named: "a ghost story")!,
-        UIImage(named: "wonder woman")!,
-        UIImage(named: "flash")!,
-        UIImage(named: "iron man")!,
-        UIImage(named: "rampage")!
-    ]
+    var popularImages: [UIImage] = []
     
     let popularTitles = ["Arrival","The Dark Knight","A Ghost Story","Wonder Woman","Flash","Iron Man","Rampage"]
     let popularDates = ["2018","2016","2015", "2018"]
     let popularNotes = ["7.5","9.5","6", "5.5"]
+    let language = "fr"
+    let api_key = "324976fbd6c97837393e4a3bf3cdd6a0"
     
     
     
@@ -47,9 +36,46 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
     @IBOutlet weak var nowCollectionView: UICollectionView!
     @IBOutlet weak var popularCollectionView: UICollectionView!
     
+    @IBOutlet weak var nowCollection: UICollectionView!
+    @IBOutlet weak var popularCollection: UICollectionView!
+    
+    var nowMovies : PagedMovies!
+    var popularMovies : PagedMovies!
+    
+    struct PagedMovies : Codable {
+        
+        struct Result: Codable{
+            let poster_path: String!
+            let adult: Bool!
+            let overview: String!
+            let release_date: String!
+            let genre_ids: [Int]!
+            let id: Int!
+            let original_title: String!
+            let title: String!
+            let backdrop_path: String!
+            let popularity: Float!
+            let vote_count: Float!
+            let video: Bool!
+            let vote_average: Float!
+            
+        }
+        
+        struct Dates: Codable{
+            let maximum: String!
+            let minimum: String!
+        }
+        
+        let page: Int!
+        let results: [Result]!
+        let dates: Dates!
+        let total_pages: Int!
+        let total_results: Int!
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         
         
         playlistCollectionView.dataSource = self
@@ -63,32 +89,11 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
         
         
         initLayouts()
+        getMovies(request : "popular?page=1?region=FR", destination: "now")
+        getMovies(request : "top_rated?page=1", destination: "popular")
+    
+        
        
-        
-        
-        // API Call
-
-        
-        let postData = NSData(data: "{}".data(using: String.Encoding.utf8)!)
-        
-        let request = NSMutableURLRequest(url: NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?page=1&language=en-US&api_key=324976fbd6c97837393e4a3bf3cdd6a0")! as URL,
-                                          cachePolicy: .useProtocolCachePolicy,
-                                          timeoutInterval: 10.0)
-        request.httpMethod = "GET"
-        request.httpBody = postData as Data
-        
-        let session = URLSession.shared
-        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-            if (error != nil) {
-                print(error ?? "Error")
-            } else {
-                let httpResponse = response as? HTTPURLResponse
-                print(httpResponse ?? "Error")
-            }
-        })
-        
-        dataTask.resume()
-        
     }
     
 
@@ -120,19 +125,37 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
             
         else if collectionView == self.nowCollectionView{
             let nowCell = collectionView.dequeueReusableCell(withReuseIdentifier: "NowMovieCell", for: indexPath) as! CollectionViewNowCell
+
+            if let movies = nowMovies{
+                nowCell.nowLabel.text = movies.results[indexPath.item].title
+                //print(nowImages.count)
+                nowCell.nowImage.image = nowImages[indexPath.item]
+            }
+            else{
+                nowCell.nowLabel.text = nowLabels[indexPath.item].uppercased()
+                nowCell.nowImage.image = nowImages[indexPath.item]
+            }
             
-            nowCell.nowImage.image = nowImages[indexPath.item]
-            nowCell.nowLabel.text = nowLabels[indexPath.item].uppercased()
+            //nowLabels[indexPath.item].uppercased()
             
             return nowCell
         }
         else{
             let popularCell = collectionView.dequeueReusableCell(withReuseIdentifier: "PopularMovieCell", for: indexPath) as! CollectionViewPopularCell
+
             
-            popularCell.popularImage.image = popularImages[indexPath.item]
-            popularCell.popularNote.text = String(Int.random(in: 0 ..< 10))
-            popularCell.popularDate.text = String(Int.random(in: 2010 ..< 2018))
-            popularCell.popularTitle.text = popularTitles[indexPath.item].uppercased()
+            if let movies = popularMovies{
+                popularCell.popularImage.image = popularImages[indexPath.item]
+                popularCell.popularNote.text = String(movies.results[indexPath.item].vote_average)
+                popularCell.popularDate.text = String(movies.results[indexPath.item].release_date)
+                popularCell.popularTitle.text = movies.results[indexPath.item].title
+            }
+            else{
+                popularCell.popularImage.image = popularImages[indexPath.item]
+                popularCell.popularNote.text = String(Int.random(in: 0 ..< 10))
+                popularCell.popularDate.text = String(Int.random(in: 2010 ..< 2018))
+                popularCell.popularTitle.text = popularTitles[indexPath.item].uppercased()
+            }
             
             return popularCell
             
@@ -166,4 +189,121 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
         layoutPopular.minimumInteritemSpacing = 3
         layoutPopular.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 2 ) - 20, height: (self.nowCollectionView.frame.size.height) - 50)
     }
+    
+    
+    func getMovies(request: String,destination:String){
+       
+        
+        
+        let postData = NSData(data: "{}".data(using: String.Encoding.utf8)!)
+        
+        let request = NSMutableURLRequest(url: NSURL(string: "https://api.themoviedb.org/3/movie/"+request+"+&language="+language+"&api_key="+api_key)! as URL,
+                                          cachePolicy: .useProtocolCachePolicy,
+                                          timeoutInterval: 10.0)
+        request.httpMethod = "GET"
+        request.httpBody = postData as Data
+        
+        let session = URLSession.shared
+        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+            if (error != nil) {
+                print(error ?? "Error")
+            } else {
+                let httpResponse = response as? HTTPURLResponse
+                print(httpResponse ?? "Error")
+                
+                // make sure we got data
+                guard let responseData = data else {
+                    print("Error: did not receive data")
+                    return
+                }
+                    
+                    let decoder = JSONDecoder()
+                    // TODO : Vérifier responseData avant de décoder
+                
+                
+                if destination == "now"{
+                    self.nowMovies = try! decoder.decode(PagedMovies.self, from: responseData)
+                    for result in self.nowMovies.results{
+                        if let url = URL(string: "https://image.tmdb.org/t/p/w185"+result.poster_path) {
+                            self.downloadImage(from: url, destination: destination)
+                        }
+                        //print("End of code. The image will continue downloading in the background and it will be loaded when it ends.")
+                    }
+                }
+                else if destination == "popular"{
+                    self.popularMovies = try! decoder.decode(PagedMovies.self, from: responseData)
+                    for result in self.popularMovies.results{
+                        if let url = URL(string: "https://image.tmdb.org/t/p/w185"+result.poster_path) {
+                            self.downloadImage(from: url, destination: destination)
+                        }
+                        //print("End of code. The image will continue downloading in the background and it will be loaded when it ends.")
+                    }
+                }
+                else{
+                    print("Destination incorrecte")
+                    return
+                }
+                    
+                    // Récupération asynchrone des images de film
+                    // Stockage des images dans nowImages
+                    
+                    // TODO: parametre d'entrée -> nowimages
+                
+            }
+            
+            
+            
+        });
+        
+        
+        dataTask.resume()
+    }
+    
+    
+    func getMoviePoster(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
+        URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
+        
+    }
+    
+    func downloadImage(from url: URL, destination: String) {
+        print("Download Started")
+        getMoviePoster(from: url) { data, response, error in
+            guard let data = data, error == nil else { return }
+            print(response?.suggestedFilename ?? url.lastPathComponent)
+            print("Download Finished")
+            DispatchQueue.main.async() {
+                // TODO: verifier que il existe une image
+                if destination == "now"{
+                self.nowImages.insert(UIImage(data: data)!, at: self.nowImages.endIndex)
+                self.nowCollection.reloadSections(IndexSet(integer: 0))
+                }
+                else if destination == "popular"{
+                    self.popularImages.insert(UIImage(data: data)!, at: self.popularImages.endIndex)
+                    self.popularCollection.reloadSections(IndexSet(integer: 0))
+                }
+
+            }
+        }
+    }
+    
+    /*func downloaded(from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {  // for swift 4.2 syntax just use ===> mode: UIView.ContentMode
+        //contentMode = mode
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard
+                let httpURLResponse = response as? HTTPURLResponse, httpURLResponse.statusCode == 200,
+                let mimeType = response?.mimeType, mimeType.hasPrefix("image"),
+                let data = data, error == nil,
+                let image = UIImage(data: data)
+                else { return }
+            DispatchQueue.main.async() {
+                self.nowImages.insert(image, at: self.nowImages.endIndex)
+                
+            }
+            }.resume()
+    }
+    func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit) {  // for swift 4.2 syntax just use ===> mode: UIView.ContentMode
+        guard let url = URL(string: link) else { return }
+        downloaded(from: url, contentMode: mode)
+    }*/
+
 }

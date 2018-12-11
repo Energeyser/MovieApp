@@ -161,21 +161,10 @@
                                                             <subviews>
                                                                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="flash" translatesAutoresizingMaskIntoConstraints="NO" id="qmB-0E-xWV">
                                                                     <rect key="frame" x="0.0" y="0.0" width="232" height="161"/>
-                                                                    <userDefinedRuntimeAttributes>
-                                                                        <userDefinedRuntimeAttribute type="color" keyPath="leftGradientColor">
-                                                                            <color key="value" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                        </userDefinedRuntimeAttribute>
-                                                                    </userDefinedRuntimeAttributes>
                                                                 </imageView>
                                                                 <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="xzY-DZ-3Hf" customClass="GradientImage" customModule="MovieApp" customModuleProvider="target">
                                                                     <rect key="frame" x="0.0" y="0.0" width="232" height="161"/>
                                                                     <userDefinedRuntimeAttributes>
-                                                                        <userDefinedRuntimeAttribute type="color" keyPath="leftGradientColor">
-                                                                            <color key="value" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                        </userDefinedRuntimeAttribute>
-                                                                        <userDefinedRuntimeAttribute type="color" keyPath="rightGradientColor">
-                                                                            <color key="value" white="1" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                        </userDefinedRuntimeAttribute>
                                                                         <userDefinedRuntimeAttribute type="color" keyPath="topGradientColor">
                                                                             <color key="value" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                         </userDefinedRuntimeAttribute>
@@ -365,8 +354,10 @@
                     <tabBarItem key="tabBarItem" title="Movies" id="X3L-Ja-o20"/>
                     <size key="freeformSize" width="375" height="820"/>
                     <connections>
+                        <outlet property="nowCollection" destination="Gdq-kp-GY7" id="Ep9-GT-AJz"/>
                         <outlet property="nowCollectionView" destination="Gdq-kp-GY7" id="Wor-8j-Qkd"/>
                         <outlet property="playlistCollectionView" destination="crS-yP-DQQ" id="6r7-md-pHK"/>
+                        <outlet property="popularCollection" destination="l87-dU-yI1" id="TeD-CQ-l4U"/>
                         <outlet property="popularCollectionView" destination="l87-dU-yI1" id="DzU-U2-orH"/>
                     </connections>
                 </viewController>
