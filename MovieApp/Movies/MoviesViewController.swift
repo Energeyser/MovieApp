@@ -13,9 +13,9 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
 
     
     let playlistImages: [UIImage] = [
-        UIImage(named: "mao trailer")!,
-        UIImage(named: "truc chinois")!,
-        UIImage(named: "other playlist")!,
+        UIImage(named: "playlist1")!,
+        UIImage(named: "the dark knight")!,
+        UIImage(named: "a ghost story")!,
     ]
     
     var nowImages: [UIImage] = []
@@ -89,8 +89,8 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
         
         
         initLayouts()
-        getMovies(request : "popular?page=1?region=FR", destination: "now")
-        getMovies(request : "top_rated?page=1", destination: "popular")
+        getMovies(request : "now_playing?page=1?region=FR", destination: "now")
+        getMovies(request : "upcoming?page=1", destination: "popular")
     
         
        
@@ -119,6 +119,7 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
             let playlistCell = collectionView.dequeueReusableCell(withReuseIdentifier: "PlaylistMovieCell", for: indexPath) as! CollectionViewPlaylistCell
             
             playlistCell.playlistImage.image = playlistImages[indexPath.item]
+            playlistCell.playlistImageBlur.image = playlistImages[indexPath.item]
             
             return playlistCell
         }
@@ -127,7 +128,7 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
             let nowCell = collectionView.dequeueReusableCell(withReuseIdentifier: "NowMovieCell", for: indexPath) as! CollectionViewNowCell
 
             if let movies = nowMovies{
-                nowCell.nowLabel.text = movies.results[indexPath.item].title
+                nowCell.nowLabel.text = movies.results[indexPath.item].title.uppercased()
                 //print(nowImages.count)
                 nowCell.nowImage.image = nowImages[indexPath.item]
             }
@@ -176,18 +177,18 @@ class MoviesViewController: UIViewController, UICollectionViewDataSource, UIColl
     func initLayouts(){
         let layoutPlaylist = self.playlistCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
         layoutPlaylist.sectionInset = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5 )
-        layoutPlaylist.minimumInteritemSpacing = 5
-        layoutPlaylist.itemSize = CGSize(width: (self.playlistCollectionView.frame.size.width - 40), height: (self.nowCollectionView.frame.size.height))
+        //layoutPlaylist.minimumInteritemSpacing = 5
+        layoutPlaylist.itemSize = CGSize(width: (self.playlistCollectionView.frame.size.width - 40), height: (self.nowCollectionView.frame.size.height)-60)
         
         let layoutNow = self.nowCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
         layoutNow.sectionInset = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5 )
         layoutNow.minimumInteritemSpacing = 5
-        layoutNow.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 3 ) - 20, height: (self.nowCollectionView.frame.size.height))
+        layoutNow.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 2.5 ) - 20, height: (self.nowCollectionView.frame.size.height))
         
         let layoutPopular = self.popularCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
         layoutPopular.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5 )
         layoutPopular.minimumInteritemSpacing = 3
-        layoutPopular.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 2 ) - 20, height: (self.nowCollectionView.frame.size.height) - 50)
+        layoutPopular.itemSize = CGSize(width: (self.nowCollectionView.frame.size.width / 2.5 ) - 20, height: (self.nowCollectionView.frame.size.height)-90)
     }
     
     
